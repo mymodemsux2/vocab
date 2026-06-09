@@ -1,0 +1,6 @@
+# Rename this file to .htaccess and place it in the same folder
+# as wordwise_config.php to block direct browser access to it.
+<Files "wordwise_config.php">
+    Order allow,deny
+    Deny from all
+</Files>
