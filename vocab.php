@@ -5,10 +5,10 @@
  */
 session_start();
 
-// &#9472;&#9472;&#9472; Config &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// --- Config -------------------------------------------------------------------
 define('DATA_DIR',     __DIR__ . '/wordwise_data/');
 define('STUDENTS_FILE', DATA_DIR . 'students.json');
-// &#9472;&#9472; Load credentials from config file &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Load credentials from config file ----------------------------------------
 $_configFile = __DIR__ . '/wordwise_config.php';
 if (!file_exists($_configFile)) {
     die('&#10060; Missing wordwise_config.php &#8212; please create it next to vocab_quiz.php. See instructions.');
@@ -19,7 +19,7 @@ foreach ([DATA_DIR] as $d) {
     if (!is_dir($d)) mkdir($d, 0755, true);
 }
 
-// &#9472;&#9472;&#9472; Student registry helpers &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// --- Student registry helpers -------------------------------------------------
 
 function loadStudents(): array {
     if (!file_exists(STUDENTS_FILE)) return [];
@@ -58,7 +58,7 @@ function saveProgress(string $slug, array $p): void {
     file_put_contents(progressFile($slug), json_encode($p, JSON_UNESCAPED_UNICODE));
 }
 
-// &#9472;&#9472;&#9472; Practice / API helpers &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// --- Practice / API helpers --------------------------------------------------
 
 function practiceCacheFile(string $slug, array $indexes): string {
     return DATA_DIR . $slug . '_pq_' . md5(implode(',', $indexes)) . '.json';
@@ -115,8 +115,13 @@ function resetGlobalRateLimit(): void {
 function callAnthropicAPI(array $wordPairs): ?array {
     if (ANTHROPIC_API_KEY === 'YOUR_API_KEY_HERE') return null;
     $pairs = implode(', ', array_map(fn($w) => $w['english'].'='.$w['hebrew'], $wordPairs));
-    $prompt = 'For these 10 English=Hebrew word pairs, return ONLY a JSON array, no markdown, no explanation.
-For each word provide: a fill-in-the-blank sentence in English (blank="_____", max 10 words, child-friendly) and 3 Hebrew distractor words from the same category (NOT the correct answer).
+    $prompt = 'For these English=Hebrew word pairs, return ONLY a JSON array, no markdown, no explanation.
+For each word provide:
+1. A fill-in-the-blank sentence in English (blank="_____", max 10 words, child-friendly)
+2. Exactly 3 Hebrew DISTRACTOR words. Critical rules:
+   - Must NOT be synonyms or near-synonyms of the correct Hebrew translation
+   - Must be clearly different things (e.g. for apple=&#1514;&#1508;&#1493;&#1495; use chair/book/dog, NOT banana/pear)
+   - All 3 must be different from each other
 Pairs: ' . $pairs . '
 JSON format (exactly): [{"e":"word","s":"sentence with _____","d":["h1","h2","h3"]},...]';
 
@@ -181,7 +186,7 @@ function selectPracticeWords(string $slug, string $mode, int $count = 10): array
     return array_map('intval', $selected);
 }
 
-// &#9472;&#9472;&#9472; Excel / CSV parser &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// --- Excel / CSV parser -------------------------------------------------------
 
 function parseExcel(string $filePath, string $ext): array {
     $words = [];
@@ -248,7 +253,7 @@ function parseExcel(string $filePath, string $ext): array {
     return $words;
 }
 
-// &#9472;&#9472;&#9472; Routing &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// --- Routing ------------------------------------------------------------------
 
 $action  = $_GET['action'] ?? ($_POST['action'] ?? '');
 $message = '';
@@ -256,13 +261,13 @@ $students = loadStudents();
 $currentSlug = $_SESSION['student_slug'] ?? '';
 $currentStudent = $currentSlug ? ($students[$currentSlug] ?? null) : null;
 
-// &#9472;&#9472; Logout &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Logout --------------------------------------------------------------------
 if ($action === 'logout') {
     unset($_SESSION['student_slug']);
     header('Location: ?'); exit;
 }
 
-// &#9472;&#9472; Login &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Login ---------------------------------------------------------------------
 if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $slug = studentSlug($_POST['slug'] ?? '');
     $pin  = trim($_POST['pin'] ?? '');
@@ -279,7 +284,7 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// &#9472;&#9472; Admin: add student &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Admin: add student --------------------------------------------------------
 if ($action === 'add_student' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['student_name'] ?? '');
     $pin  = trim($_POST['student_pin'] ?? '');
@@ -300,7 +305,7 @@ if ($action === 'add_student' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = 'admin';
 }
 
-// &#9472;&#9472; Admin: delete student &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Admin: delete student -----------------------------------------------------
 if ($action === 'delete_student' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $slug = studentSlug($_POST['slug'] ?? '');
     if ($slug && isset($students[$slug])) {
@@ -314,7 +319,7 @@ if ($action === 'delete_student' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = 'admin';
 }
 
-// &#9472;&#9472; Admin: upload words for a student &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Admin: upload words for a student ----------------------------------------
 if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $students = loadStudents(); // always fresh before checking
     $slug = studentSlug($_POST['slug'] ?? '');
@@ -344,7 +349,7 @@ if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = 'admin';
 }
 
-// &#9472;&#9472; Quiz: answer &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Quiz: answer --------------------------------------------------------------
 if ($action === 'answer' && $currentSlug && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $p = loadProgress($currentSlug);
     $knew = ($_POST['knew'] ?? '0') === '1';
@@ -362,7 +367,7 @@ if ($action === 'answer' && $currentSlug && $_SERVER['REQUEST_METHOD'] === 'POST
     header('Location: ?action=quiz'); exit;
 }
 
-// &#9472;&#9472; Quiz: next level &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Quiz: next level ----------------------------------------------------------
 if ($action === 'next_level' && $currentSlug) {
     $p = loadProgress($currentSlug);
     $missed = $p['level_missed'];
@@ -374,13 +379,13 @@ if ($action === 'next_level' && $currentSlug) {
     header('Location: ?action=quiz'); exit;
 }
 
-// &#9472;&#9472; Quiz: reset progress (full start over) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Quiz: reset progress (full start over) -----------------------------------
 if ($action === 'reset' && $currentSlug) {
     if (file_exists(progressFile($currentSlug))) unlink(progressFile($currentSlug));
     header('Location: ?action=quiz'); exit;
 }
 
-// &#9472;&#9472; Quiz: restart with only ever-missed words (level 2 mode) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Quiz: restart with only ever-missed words (level 2 mode) -----------------
 if ($action === 'restart_hard' && $currentSlug) {
     $p = loadProgress($currentSlug);
     $hard = $p['ever_missed'] ?? [];
@@ -393,7 +398,7 @@ if ($action === 'restart_hard' && $currentSlug) {
     header('Location: ?action=quiz'); exit;
 }
 
-// &#9472;&#9472; Admin: reset a student's progress &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Admin: reset a student's progress ----------------------------------------
 if ($action === 'reset_student' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $students = loadStudents(); // always fresh
     $slug = studentSlug($_POST['slug'] ?? '');
@@ -404,7 +409,7 @@ if ($action === 'reset_student' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = 'admin';
 }
 
-// &#9472;&#9472; Admin: reset global rate limit &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Admin: reset global rate limit -------------------------------------------
 if ($action === 'reset_ratelimit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     resetGlobalRateLimit();
     $message = '&#9989; API rate limit reset.';
@@ -425,7 +430,7 @@ if ($action === 'save_ratelimit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $action  = 'admin';
 }
 
-// &#9472;&#9472; Practice: word selection form &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Practice: word selection form ---------------------------------------------
 // (just sets session vars and redirects to the actual practice page)
 if ($action === 'practice_start' && $currentSlug && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $pMode     = $_POST['pmode']     ?? 'all';   // all|hard|mix
@@ -440,7 +445,7 @@ if ($action === 'practice_start' && $currentSlug && $_SERVER['REQUEST_METHOD'] =
     header('Location: ?action=practice'); exit;
 }
 
-// &#9472;&#9472; Practice: regenerate questions (clears cache, new API call) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Practice: regenerate questions (clears cache, new API call) ---------------
 if ($action === 'practice_regen' && $currentSlug) {
     $ps = $_SESSION['practice'] ?? [];
     if (!empty($ps['indexes'])) {
@@ -451,7 +456,7 @@ if ($action === 'practice_regen' && $currentSlug) {
     header('Location: ?action=practice'); exit;
 }
 
-// &#9472;&#9472; Practice: new words (same mode, new random selection) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Practice: new words (same mode, new random selection) ---------------------
 if ($action === 'practice_newwords' && $currentSlug) {
     $ps   = $_SESSION['practice'] ?? [];
     $pMode = $ps['pmode_sel'] ?? 'all';
@@ -461,7 +466,7 @@ if ($action === 'practice_newwords' && $currentSlug) {
     header('Location: ?action=practice'); exit;
 }
 
-// &#9472;&#9472; Quiz: init &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Quiz: init ----------------------------------------------------------------
 $words = [];
 $p     = ['level'=>1,'current_set'=>[],'level_missed'=>[],'known'=>[]];
 $currentWord  = null;
@@ -493,7 +498,7 @@ if ($currentSlug && $currentStudent) {
     $allDone        = $levelDone && empty($p['level_missed']);
 }
 
-// &#9472;&#9472; Practice: init data &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Practice: init data -------------------------------------------------------
 $practiceData    = null; // generated questions from API/cache
 $practiceWords   = [];   // the actual word objects for this session
 $practiceIndexes = [];
@@ -501,7 +506,7 @@ $practiceSubMode = '';
 $practiceError   = '';
 $rateLimit       = ['ok'=>true,'student_calls'=>0,'global_calls'=>0,'student_ok'=>true,'global_ok'=>true];
 
-// &#9472;&#9472; AJAX: check alternative answer &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- AJAX: check alternative answer ----------------------------
 if ($action === 'api_check_alt') {
     header('Content-Type: application/json');
     if (!$currentSlug) {
@@ -586,7 +591,27 @@ if ($action === 'api_check_alt') {
     exit;
 }
 
-// &#9472;&#9472; AJAX: generate questions &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- AJAX: generate questions -------------------------------------------------------
+// -- AJAX: save practice missed words to ever_missed
+if ($action === 'api_save_missed' && $currentSlug) {
+    header('Content-Type: application/json');
+    $missedIndexes = json_decode($_POST['missed'] ?? '[]', true);
+    if (is_array($missedIndexes) && count($missedIndexes) > 0) {
+        $p = loadProgress($currentSlug);
+        $ever = $p['ever_missed'] ?? [];
+        foreach ($missedIndexes as $idx) {
+            $i2 = (int)$idx;
+            if (!in_array($i2, $ever)) $ever[] = $i2;
+        }
+        $p['ever_missed'] = $ever;
+        saveProgress($currentSlug, $p);
+        echo json_encode(['ok' => true]);
+    } else {
+        echo json_encode(['ok' => true]);
+    }
+    exit;
+}
+
 if ($action === 'api_questions' && $currentSlug) {
     header('Content-Type: application/json');
     $ps = $_SESSION['practice'] ?? [];
@@ -661,7 +686,7 @@ if ($action === 'practice' && $currentSlug) {
         }
         $rateLimit = checkRateLimit($currentSlug);
         // For memory mode, no API needed. For others, JS will fetch async.
-        if ($practiceSubMode !== 'memory') {
+        if ($practiceSubMode !== 'memory' && $practiceSubMode !== 'spell') {
             // Check if already cached so we can pass it directly (no loading screen needed)
             $practiceData = loadPracticeCache($currentSlug, $practiceIndexes);
         }
@@ -673,7 +698,7 @@ if ($action === 'practice' && $currentSlug) {
 // Default action
 if (!$action) $action = $currentSlug ? 'quiz' : 'login';
 
-// &#9472;&#9472; Admin report: load data for a specific student &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// -- Admin report: load data for a specific student ----------------------------
 $arSlug    = '';
 $arStudent = null;
 $arWords   = [];
@@ -967,6 +992,8 @@ p{color:var(--muted);line-height:1.6;margin-bottom:10px;}
         <a href="?action=quiz" <?= $action==='quiz'?'class="active"':'' ?>>Quiz</a>
         <a href="?action=practice_pick" <?= in_array($action,['practice_pick','practice'])?'class="active"':'' ?>>Practice</a>
         <a href="?action=report" <?= $action==='report'?'class="active"':'' ?>>Report</a>
+      <?php else: ?>
+        <a href="?" <?= (!$action||$action==='login')?'class="active"':'' ?>>&#127968; Home</a>
       <?php endif; ?>
       <a href="?action=admin" <?= $action==='admin'?'class="active"':'' ?>>Admin</a>
     </div>
@@ -975,7 +1002,7 @@ p{color:var(--muted);line-height:1.6;margin-bottom:10px;}
 
 <div class="container">
 
-<?php /* &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; LOGIN / STUDENT PICKER &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; */
+<?php /* ====================== LOGIN / STUDENT PICKER ====================== */
 if ($action === 'login' || (!$currentSlug && $action !== 'admin')): ?>
 
 <div style="margin-top:32px;">
@@ -1045,7 +1072,7 @@ if ($action === 'login' || (!$currentSlug && $action !== 'admin')): ?>
   </div>
 </div>
 
-<?php /* &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; QUIZ &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; */
+<?php /* ====================== QUIZ ====================== */
 elseif ($action === 'quiz' && $currentSlug && $currentStudent): ?>
 
 <div style="margin-top:22px;">
@@ -1171,7 +1198,7 @@ elseif ($action === 'quiz' && $currentSlug && $currentStudent): ?>
   <?php endif; ?>
 </div>
 
-<?php /* &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; REPORT &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; */
+<?php /* ====================== REPORT ====================== */
 elseif ($action === 'report' && $currentSlug && $currentStudent):
   $rWords = loadWords($currentSlug);
   $rP     = loadProgress($currentSlug);
@@ -1285,7 +1312,7 @@ elseif ($action === 'report' && $currentSlug && $currentStudent):
   <?php endif; ?>
 </div>
 
-<?php /* &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; PRACTICE PICKER &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; */
+<?php /* ====================== PRACTICE PICKER ====================== */
 elseif ($action === 'practice_pick' && $currentSlug && $currentStudent):
   $pWords   = loadWords($currentSlug);
   $pProg    = loadProgress($currentSlug);
@@ -1360,12 +1387,12 @@ elseif ($action === 'practice_pick' && $currentSlug && $currentStudent):
   <?php endif; ?>
 </div>
 
-<?php /* &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; PRACTICE SESSION &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; */
+<?php /* ====================== PRACTICE SESSION ====================== */
 elseif ($action === 'practice' && $currentSlug && $currentStudent): ?>
 <div style="margin-top:24px;" id="practiceApp"
   data-mode="<?= htmlspecialchars($practiceSubMode) ?>"
-  data-words='<?= json_encode(array_values($practiceWords), JSON_UNESCAPED_UNICODE) ?>'
-  data-questions='<?= $practiceData ? json_encode($practiceData, JSON_UNESCAPED_UNICODE) : "null" ?>'
+  data-words='<?= htmlspecialchars(json_encode(array_values($practiceWords), JSON_UNESCAPED_UNICODE), ENT_QUOTES) ?>'
+  data-questions='<?= $practiceData ? htmlspecialchars(json_encode($practiceData, JSON_UNESCAPED_UNICODE), ENT_QUOTES) : "null" ?>'
   data-ratelimit-ok="<?= $rateLimit['ok'] ? '1' : '0' ?>"
   data-student-calls="<?= $rateLimit['student_calls'] ?>"
   data-global-calls="<?= $rateLimit['global_calls'] ?>"
@@ -1399,7 +1426,7 @@ elseif ($action === 'practice' && $currentSlug && $currentStudent): ?>
   </div>
 </div>
 
-<?php /* &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; ADMIN REPORT &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; */
+<?php /* ====================== ADMIN REPORT ====================== */
 elseif ($action === 'admin_report' && $arStudent):
   $arKnown   = $arP['known'] ?? [];
   $arEver    = $arP['ever_missed'] ?? [];
@@ -1474,7 +1501,7 @@ elseif ($action === 'admin_report' && $arStudent):
   <?php endif; ?>
 </div>
 
-<?php /* &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; ADMIN &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; */
+<?php /* ====================== ADMIN ====================== */
 elseif ($action === 'admin'):
 $students = loadStudents(); // always render with freshest data
 ?>
@@ -1894,7 +1921,8 @@ function filterTable(type) {
     if (c.classList.contains('flipped')) document.getElementById('memBtns').style.display = 'block';
   };
   window.memAnswer = function(knew) {
-    if (knew) score++; else wrongs.push(qs[qIndex]);
+    if (knew) score++;
+    else { var wq = Object.assign({}, qs[qIndex]); wq.i = qs[qIndex].i !== undefined ? qs[qIndex].i : qIndex; wrongs.push(wq); }
     qIndex++; renderMemory();
   };
   window.openAltCheck = function() {
@@ -1986,7 +2014,7 @@ function filterTable(type) {
       score++;
       result.innerHTML = '<div style="color:var(--green);font-size:1.1rem;font-weight:800;">\u2705 Correct!</div>';
     } else {
-      wrongs.push(q);
+      var wq2 = Object.assign({}, q); wq2.i = q.i !== undefined ? q.i : qIndex; wrongs.push(wq2);
       result.innerHTML = '<div style="color:var(--accent2);font-size:1.1rem;font-weight:800;">\u274C ' + esc(typed) + '</div>' +
         '<div style="color:var(--muted);margin-top:4px;">Correct: <strong style="color:var(--text);">' + esc(correct) + '</strong></div>';
     }
@@ -1998,7 +2026,11 @@ function filterTable(type) {
     if (qIndex >= qs.length) { renderResult(); return; }
     var q = qs[qIndex];
     setCount((qIndex+1) + ' / ' + qs.length);
-    var opts = shuffle([q.h].concat((q.d||[]).slice(0,3)));
+    // Ensure all 4 options are unique
+    var distractors = (q.d||[]).filter(function(d){ return d !== q.h; });
+    var unique = [];
+    distractors.forEach(function(d){ if (unique.indexOf(d)<0) unique.push(d); });
+    var opts = shuffle([q.h].concat(unique.slice(0,3)));
     var btns = opts.map(function(opt,i) {
       return '<button class="mc-btn" id="mcb'+i+'" onclick="mcAnswer(this,\''+escAttr(opt)+'\',\''+escAttr(q.h)+'\')">'
         + esc(opt) + '</button>';
@@ -2019,7 +2051,8 @@ function filterTable(type) {
       if (b.textContent.trim() === correct) b.classList.add('correct');
       else if (b === btn && chosen !== correct) b.classList.add('wrong');
     });
-    if (chosen === correct) score++; else wrongs.push(qs[qIndex]);
+    if (chosen === correct) score++;
+    else { var wqm = Object.assign({}, qs[qIndex]); wqm.i = qs[qIndex].i !== undefined ? qs[qIndex].i : qIndex; wrongs.push(wqm); }
     document.getElementById('mcNext').style.display = 'block';
   };
   window.mcNext = function() { answered = false; qIndex++; renderMC(); };
@@ -2042,7 +2075,9 @@ function filterTable(type) {
 
     var wordList = qs.map(function(q) { return q.e; });
     var bankHtml = shuffle(wordList.slice()).map(function(w) {
-      return '<div class="word-chip" draggable="true" id="chip_' + escAttr(w) + '" data-word="' + escAttr(w) + '">' + esc(w) + '</div>';
+      // Use safeId for id/data attributes (replace apostrophes with __), esc for display
+      var sid = w.replace(/'/g, '__').replace(/[^a-zA-Z0-9_\- ]/g, '_');
+      return '<div class="word-chip" draggable="true" id="chip_' + sid + '" data-word="' + esc(w) + '">' + esc(w) + '</div>';
     }).join('');
 
     // Side-by-side layout: sentences left, sticky bank right
@@ -2056,7 +2091,7 @@ function filterTable(type) {
               + '<div class="word-bank" id="wordBank">' + bankHtml + '</div>'
             + '</div>'
             + '<div style="margin-top:12px;">'
-              + '<button class="btn btn-primary" id="checkBtn" disabled onclick="checkFITB()" style="width:100%;">Check \u2713</button>'
+              + '<div id="checkBtn" class="btn btn-ghost" style="width:100%;text-align:center;cursor:not-allowed;opacity:.4;">Check \u2713</div>'
             + '</div>'
           + '</div>'
       + '</div>';
@@ -2089,6 +2124,7 @@ function filterTable(type) {
       chip.addEventListener('dragend',   function(){ chip.classList.remove('dragging'); });
       chip.addEventListener('click',     function(){ doClickChip(chip, word, null); });
     });
+    // Attach check button via addEventListener (onclick on disabled button is unreliable)
   }
 
   // Called when a filled blank starts being dragged
@@ -2109,7 +2145,7 @@ function filterTable(type) {
       // came from bank chip
       for (var i in fitbAnswers) { if (fitbAnswers[i] === word) { dragFromBlank = parseInt(i); break; } }
     }
-    var chip = document.getElementById('chip_' + word);
+    var chip = document.getElementById('chip_' + word.replace(/'/g,'__').replace(/[^a-zA-Z0-9_\- ]/g,'_'));
     if (chip) chip.classList.add('dragging');
   }
   function doDropToBlank(idx) {
@@ -2151,27 +2187,49 @@ function filterTable(type) {
       blank.classList.remove('correct','wrong');
       blank.removeAttribute('draggable');
     }
-    var chip = document.getElementById('chip_'+word); if (chip) chip.style.display = '';
-    var btn = document.getElementById('checkBtn'); if (btn) btn.disabled = Object.keys(fitbAnswers).length < qs.length;
+    var chip = document.getElementById('chip_'+word.replace(/'/g,'__').replace(/[^a-zA-Z0-9_\- ]/g,'_')); if (chip) chip.style.display = '';
+    updateCheckBtn();
   }
   function fillBlank(idx, word) {
     var prev = fitbAnswers[idx];
-    if (prev && prev !== word) { var oc = document.getElementById('chip_'+prev); if(oc) oc.style.display=''; }
+    if (prev && prev !== word) {
+      var pcId = prev.replace(/'/g,'__').replace(/[^a-zA-Z0-9_\- ]/g,'_');
+      var oc = document.getElementById('chip_'+pcId); if(oc) oc.style.display='';
+    }
     fitbAnswers[idx] = word;
     var blank = document.getElementById('blank'+idx);
     if (blank) {
       blank.textContent = word;
-      setupBlankDrag(blank, idx, word);  // make filled blank draggable back to bank
+      setupBlankDrag(blank, idx, word);
     }
-    var chip = document.getElementById('chip_'+word); if (chip) chip.style.display = 'none';
-    var btn = document.getElementById('checkBtn'); if (btn) btn.disabled = Object.keys(fitbAnswers).length < qs.length;
+    var chipId = word.replace(/'/g,'__').replace(/[^a-zA-Z0-9_\- ]/g,'_');
+    var chip = document.getElementById('chip_'+chipId); if (chip) chip.style.display = 'none';
+    updateCheckBtn();
+  }
+  function updateCheckBtn() {
+    var btn = document.getElementById('checkBtn');
+    if (!btn) return;
+    var allFilled = Object.keys(fitbAnswers).length >= qs.length;
+    if (allFilled) {
+      btn.className = 'btn btn-primary';
+      btn.style.cssText = 'width:100%;text-align:center;cursor:pointer;opacity:1;';
+      btn.onclick = function() { checkFITB(); };
+    } else {
+      btn.className = 'btn btn-ghost';
+      btn.style.cssText = 'width:100%;text-align:center;cursor:not-allowed;opacity:.4;';
+      btn.onclick = null;
+    }
+  }
+  function normalizeApos(s) {
+    return (s||'').replace(/[\u2018\u2019\u201A\u201B\u2032\u0060\u00B4]/g, "'").replace(/\\/g, '');
   }
   window.checkFITB = function() {
     qs.forEach(function(q,i) {
       var blank = document.getElementById('blank'+i); if (!blank) return;
-      var ans = fitbAnswers[i] || '';
-      if (ans.toLowerCase() === q.e.toLowerCase()) { blank.classList.add('correct'); score++; }
-      else { blank.classList.add('wrong'); blank.textContent = ans + ' (\u2717 ' + q.e + ')'; wrongs.push(q); }
+      var ans     = normalizeApos(fitbAnswers[i] || '');
+      var correct = normalizeApos(q.e);
+      if (ans.toLowerCase() === correct.toLowerCase()) { blank.classList.add('correct'); score++; }
+      else { blank.classList.add('wrong'); blank.textContent = (fitbAnswers[i]||'') + ' (\u2717 ' + q.e + ')'; wrongs.push(q); }
     });
     var btn = document.getElementById('checkBtn'); if (btn) btn.style.display = 'none';
     var rb = document.createElement('div');
@@ -2186,6 +2244,17 @@ function filterTable(type) {
   function renderResult() {
     var fb = document.getElementById('floatingBank');
     if (fb) fb.remove();
+    // Save missed words to server so they appear in ever_missed / hard words
+    if (wrongs.length > 0) {
+      var missedIdxs = wrongs.map(function(q) {
+        return q.i !== undefined ? q.i : -1;
+      }).filter(function(i) { return i >= 0; });
+      if (missedIdxs.length > 0) {
+        var fd = new FormData();
+        fd.append('missed', JSON.stringify(missedIdxs));
+        fetch('?action=api_save_missed', {method:'POST', body:fd, credentials:'same-origin'});
+      }
+    }
     var pct   = Math.round(score / Math.max(qs.length,1) * 100);
     var emoji = pct===100 ? '\u{1F3C6}' : pct>=70 ? '\u{1F389}' : pct>=40 ? '\u{1F4AA}' : '\u{1F4DA}';
     var wrongHtml = wrongs.length
@@ -2233,6 +2302,14 @@ function filterTable(type) {
   var modeNames = {memory:'\u{1F9E0} Memory', spell:'\u270F\uFE0F Spell It', fitb:'\u270D Fill in the Blank', mc:'\u{1F3AF} Multiple Choice'};
   setTitle(modeNames[mode] || 'Practice');
 
+  if (!words || words.length === 0) {
+    container.style.display = 'block';
+    container.innerHTML = '<div class="card" style="text-align:center;">'  
+      + '<p style="font-size:1.1rem;">&#128218; No words loaded for this practice session.</p>'
+      + '<a href="?action=practice_pick" class="btn btn-primary" style="margin-top:12px;">&#8592; Back</a>'
+      + '</div>';
+    return;
+  }
   loadQuestions(function() {
     if (mode === 'memory')      renderMemory();
     else if (mode === 'spell')  renderSpell();
