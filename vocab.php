@@ -925,9 +925,9 @@ p{color:var(--muted);line-height:1.6;margin-bottom:10px;}
 .pq-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--blue));border-radius:8px;transition:width .4s;}
 /* MC buttons */
 .mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;}
-.mc-btn{padding:16px;border-radius:14px;border:2px solid rgba(255,255,255,.1);background:var(--card2);
-  cursor:pointer;font-family:'Nunito',sans-serif;font-weight:800;font-size:1rem;
-  color:var(--text);direction:rtl;transition:all .2s;}
+.mc-btn{padding:18px 14px;border-radius:16px;border:2px solid rgba(255,255,255,.1);background:var(--card2);
+  cursor:pointer;font-family:'Rubik','Nunito',sans-serif;font-weight:700;font-size:1.1rem;
+  color:var(--text);direction:rtl;transition:all .2s;line-height:1.4;}
 .mc-btn:hover:not(:disabled){border-color:var(--blue);background:rgba(74,158,255,.1);}
 .mc-btn.correct{border-color:var(--green)!important;background:rgba(78,203,113,.2)!important;color:var(--green)!important;}
 .mc-btn.wrong{border-color:var(--accent2)!important;background:rgba(255,107,107,.15)!important;color:var(--accent2)!important;}
@@ -974,6 +974,28 @@ p{color:var(--muted);line-height:1.6;margin-bottom:10px;}
   .fitb-bank-sticky{position:static;}
 }
 .spell-correct{border-color:var(--green)!important;background:rgba(78,203,113,.1)!important;}
+/* Matching pairs */
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;}
+.match-col{display:flex;flex-direction:column;gap:8px;}
+.match-item{padding:12px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.1);
+  background:var(--card2);cursor:pointer;font-weight:700;font-size:.9rem;
+  transition:all .2s;text-align:center;user-select:none;}
+.match-item:hover{border-color:var(--blue);}
+.match-item.selected{border-color:var(--accent);background:rgba(249,200,70,.1);}
+.match-item.matched{border-color:var(--green);background:rgba(78,203,113,.15);
+  color:var(--green);cursor:default;animation:none;}
+.match-item.wrong{border-color:var(--accent2);background:rgba(255,107,107,.15);
+  animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+/* Speed round */
+.speed-timer-bar{height:8px;background:rgba(255,255,255,.07);border-radius:8px;overflow:hidden;margin-bottom:20px;}
+.speed-timer-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--green),var(--accent));
+  transition:width .1s linear;}
+.speed-timer-fill.urgent{background:linear-gradient(90deg,var(--accent2),#ff4500);}
+.speed-answer-btn{padding:28px 16px;border-radius:16px;border:2px solid rgba(255,255,255,.12);
+  background:var(--card2);cursor:pointer;text-align:center;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;min-height:90px;}
+.speed-answer-btn:hover{border-color:var(--blue);background:rgba(74,158,255,.1);transform:translateY(-2px);}
 .spell-wrong{border-color:var(--accent2)!important;background:rgba(255,107,107,.08)!important;}
 .rate-limit-note{font-size:.8rem;color:var(--accent2);margin-top:6px;text-align:center;}
 </style>
@@ -1351,6 +1373,16 @@ elseif ($action === 'practice_pick' && $currentSlug && $currentStudent):
           <span class="mode-icon">&#127919;</span>
           <div class="mode-title">Multiple Choice</div>
           <div class="mode-desc">Pick the correct Hebrew</div>
+        </div>
+        <div class="mode-card" id="modeMatch" onclick="pickMode('match')">
+          <span class="mode-icon">&#128279;</span>
+          <div class="mode-title">Matching Pairs</div>
+          <div class="mode-desc">Connect English to Hebrew</div>
+        </div>
+        <div class="mode-card" id="modeSpeed" onclick="pickMode('speed')">
+          <span class="mode-icon">&#9889;</span>
+          <div class="mode-title">Speed Round</div>
+          <div class="mode-desc">Race against the clock</div>
         </div>
       </div>
     </div>
@@ -1836,7 +1868,7 @@ function filterTable(type) {
 
   // \u2500\u2500 Fetch questions async \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function loadQuestions(cb) {
-    if (mode === 'memory' || mode === 'spell') {
+    if (mode === 'memory' || mode === 'spell' || mode === 'match') {
       qs = words.map(function(w) { return {english:w.english, hebrew:w.hebrew}; });
       cb();
       return;
@@ -1971,12 +2003,13 @@ function filterTable(type) {
     setCount((qIndex+1) + ' / ' + qs.length);
     container.innerHTML = pbar() +
       '<div class="word-card" style="text-align:center;padding:36px 24px;">' +
-        '<p style="font-size:.85rem;color:var(--muted);margin-bottom:8px;">Type the English word for:</p>' +
-        '<div class="english-word" style="font-size:2.4rem;direction:rtl;color:var(--accent);">' + esc(q.hebrew) + '</div>' +
+        '<p style="font-size:.9rem;color:var(--muted);margin-bottom:6px;">What is the English word for:</p>' +
+        '<div style="font-family:\'Rubik\',sans-serif;font-size:2.8rem;font-weight:800;direction:rtl;color:var(--accent);margin:12px 0;letter-spacing:1px;">' + esc(q.hebrew) + '</div>' +
       '</div>' +
       '<div style="margin-top:16px;">' +
         '<div style="display:flex;gap:10px;align-items:center;max-width:400px;margin:0 auto;">' +
           '<input id="spellInput" class="text-input" type="text" placeholder="Type English here..." autocomplete="off" autocorrect="off" spellcheck="false" ' +
+            'style="font-family:\'Fredoka One\',\'Nunito\',sans-serif;font-size:1.2rem;text-align:center;letter-spacing:1px;" ' +
             'onkeydown="if(event.keyCode===13)checkSpell()">' +
           '<button class="btn btn-primary" onclick="checkSpell()">\u2713</button>' +
         '</div>' +
@@ -2032,7 +2065,8 @@ function filterTable(type) {
     distractors.forEach(function(d){ if (unique.indexOf(d)<0) unique.push(d); });
     var opts = shuffle([q.h].concat(unique.slice(0,3)));
     var btns = opts.map(function(opt,i) {
-      return '<button class="mc-btn" id="mcb'+i+'" onclick="mcAnswer(this,\''+escAttr(opt)+'\',\''+escAttr(q.h)+'\')">'
+      return '<button class="mc-btn" id="mcb'+i+'" onclick="mcAnswer(this,\''+escAttr(opt)+'\',\''+escAttr(q.h)+'\')"'
+        + ' style="font-family:\'Rubik\',sans-serif;font-size:1.15rem;line-height:1.4;">'
         + esc(opt) + '</button>';
     }).join('');
     container.innerHTML = pbar() +
@@ -2299,7 +2333,7 @@ function filterTable(type) {
 
   // \u2500\u2500 Init \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   if (apiInfo && mode !== 'memory') apiInfo.style.display = 'block';
-  var modeNames = {memory:'\u{1F9E0} Memory', spell:'\u270F\uFE0F Spell It', fitb:'\u270D Fill in the Blank', mc:'\u{1F3AF} Multiple Choice'};
+  var modeNames = {memory:'Memory', spell:'Spell It', fitb:'Fill in the Blank', mc:'Multiple Choice', match:'Matching Pairs', speed:'Speed Round'};
   setTitle(modeNames[mode] || 'Practice');
 
   if (!words || words.length === 0) {
@@ -2310,11 +2344,209 @@ function filterTable(type) {
       + '</div>';
     return;
   }
+  // -- MATCHING PAIRS
+  function renderMatch() {
+    var total = qs.length;
+    var matched = 0;
+    var selEng = null; // selected english index
+    var selHeb = null; // selected hebrew index
+    // Build shuffled arrays
+    var engItems = qs.map(function(q,i){ return {i:i, text:q.english||q.e, q:q}; });
+    var hebItems = qs.map(function(q,i){ return {i:i, text:q.hebrew||q.h, q:q}; });
+    hebItems = shuffle(hebItems.slice());
+    setCount(matched + ' / ' + total);
+
+    function render() {
+      var engHtml = engItems.map(function(item) {
+        return '<div class="match-item" id="eng_'+item.i+'" data-idx="'+item.i+'">' + esc(item.text) + '</div>';
+      }).join('');
+      var hebHtml = hebItems.map(function(item) {
+        return '<div class="match-item" id="heb_'+item.i+'" data-idx="'+item.i+'" dir="rtl" style="font-family:Rubik,sans-serif;">' + esc(item.text) + '</div>';
+      }).join('');
+      container.innerHTML =
+        '<div class="match-grid">'
+        + '<div class="match-col" id="engCol">' + engHtml + '</div>'
+        + '<div class="match-col" id="hebCol">' + hebHtml + '</div>'
+        + '</div>';
+      // Attach events
+      document.querySelectorAll('#engCol .match-item').forEach(function(el) {
+        el.addEventListener('click', function() { pickEng(parseInt(el.dataset.idx)); });
+      });
+      document.querySelectorAll('#hebCol .match-item').forEach(function(el) {
+        el.addEventListener('click', function() { pickHeb(parseInt(el.dataset.idx)); });
+      });
+    }
+
+    function pickEng(idx) {
+      var el = document.getElementById('eng_'+idx);
+      if (!el || el.classList.contains('matched')) return;
+      if (selEng !== null) document.getElementById('eng_'+selEng).classList.remove('selected');
+      selEng = idx; el.classList.add('selected');
+      if (selHeb !== null) tryMatch();
+    }
+    function pickHeb(idx) {
+      var el = document.getElementById('heb_'+idx);
+      if (!el || el.classList.contains('matched')) return;
+      if (selHeb !== null) document.getElementById('heb_'+selHeb).classList.remove('selected');
+      selHeb = idx; el.classList.add('selected');
+      if (selEng !== null) tryMatch();
+    }
+    function tryMatch() {
+      var eEl = document.getElementById('eng_'+selEng);
+      var hEl = document.getElementById('heb_'+selHeb);
+      if (selEng === selHeb) {
+        // Correct!
+        score++; matched++;
+        eEl.classList.remove('selected'); eEl.classList.add('matched');
+        hEl.classList.remove('selected'); hEl.classList.add('matched');
+        setCount(matched + ' / ' + total);
+        selEng = null; selHeb = null;
+        if (matched === total) { setTimeout(renderResult, 600); }
+      } else {
+        // Wrong!
+        wrongs.push(qs[selEng]);
+        eEl.classList.add('wrong'); hEl.classList.add('wrong');
+        setTimeout(function() {
+          eEl.classList.remove('wrong','selected');
+          hEl.classList.remove('wrong','selected');
+          selEng = null; selHeb = null;
+        }, 600);
+      }
+    }
+    render();
+  }
+
+  // -- SPEED ROUND (2 answers + countdown intro)
+  var speedTimer = null;
+  var speedTimePerCard = 5;
+  var speedTimes = [];
+  var speedStart = 0;
+  var speedAnswered = false;
+
+  function startSpeedCountdown(cb) {
+    var steps = ['3', '2', '1', 'GO!'];
+    var colors = ['var(--muted)', 'var(--accent)', 'var(--green)', 'var(--green)'];
+    var i = 0;
+    container.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:center;height:220px;">'
+        + '<div id="cdNum" style="font-family:Fredoka One,cursive;font-size:6rem;color:var(--muted);'
+          + 'transition:transform .15s,color .15s;"></div>'
+      + '</div>';
+    function tick() {
+      var el = document.getElementById('cdNum');
+      if (!el) return;
+      el.textContent = steps[i];
+      el.style.color = colors[i];
+      el.style.transform = 'scale(1.3)';
+      setTimeout(function(){ if(el) el.style.transform = 'scale(1)'; }, 150);
+      i++;
+      if (i < steps.length) setTimeout(tick, 750);
+      else setTimeout(cb, 750);
+    }
+    tick();
+  }
+
+  function renderSpeedFirst() {
+    // Show countdown before first card
+    startSpeedCountdown(function() { renderSpeed(); });
+  }
+
+  function renderSpeed() {
+    if (qIndex >= qs.length) { renderSpeedResult(); return; }
+    var q = qs[qIndex];
+    setCount((qIndex+1) + ' / ' + qs.length);
+    speedAnswered = false;
+    speedStart = Date.now();
+
+    // Pick one wrong distractor
+    var wrongOpts = (q.d||[]).filter(function(d){ return d && d !== q.h; });
+    var wrongAns = wrongOpts.length > 0 ? wrongOpts[Math.floor(Math.random()*wrongOpts.length)] : (q.d||['???'])[0];
+    var opts = shuffle([{val:q.h, correct:true}, {val:wrongAns, correct:false}]);
+
+    var btns = opts.map(function(opt) {
+      return '<div class="speed-answer-btn" data-val="'+esc(opt.val)+'" data-correct="'+esc(q.h)+'"'
+        + ' onclick="speedPick(this)">'
+        + '<span style="font-family:Rubik,sans-serif;font-size:1.4rem;font-weight:800;direction:rtl;">'
+        + esc(opt.val) + '</span></div>';
+    }).join('');
+
+    container.innerHTML =
+      '<div class="speed-timer-bar"><div class="speed-timer-fill" id="speedBar" style="width:100%;"></div></div>'
+      + '<div class="card" style="text-align:center;padding:28px 24px;margin-bottom:16px;">'
+        + '<div class="english-word" style="font-size:2.4rem;">'+esc(q.e||q.english)+'</div>'
+        + '<p style="font-size:.8rem;color:var(--muted);margin-top:8px;">Which is the correct Hebrew?</p>'
+      + '</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">'+btns+'</div>';
+
+    speak(q.e||q.english);
+    startSpeedTimer(q);
+  }
+
+  function startSpeedTimer(q) {
+    clearInterval(speedTimer);
+    var elapsed = 0;
+    var bar = document.getElementById('speedBar');
+    speedTimer = setInterval(function() {
+      elapsed += 100;
+      var pct = Math.max(0, 100 - (elapsed / (speedTimePerCard * 1000) * 100));
+      if (bar) {
+        bar.style.width = pct + '%';
+        if (pct < 30) bar.classList.add('urgent'); else bar.classList.remove('urgent');
+      }
+      if (elapsed >= speedTimePerCard * 1000) {
+        clearInterval(speedTimer);
+        if (!speedAnswered) speedTimeout(q);
+      }
+    }, 100);
+  }
+
+  function speedTimeout(q) {
+    speedAnswered = true;
+    speedTimes.push(speedTimePerCard * 1000);
+    var wq = Object.assign({}, q); wq.i = q.i !== undefined ? q.i : qIndex; wrongs.push(wq);
+    document.querySelectorAll('.speed-answer-btn').forEach(function(b) {
+      b.style.pointerEvents = 'none';
+      if (b.dataset.val === q.h) b.style.background = 'rgba(78,203,113,.3)';
+    });
+    setTimeout(function() { qIndex++; renderSpeed(); }, 900);
+  }
+
+  window.speedPick = function(btn) {
+    if (speedAnswered) return;
+    speedAnswered = true;
+    clearInterval(speedTimer);
+    speedTimes.push(Date.now() - speedStart);
+    var chosen  = btn.dataset.val;
+    var correct = btn.dataset.correct;
+    document.querySelectorAll('.speed-answer-btn').forEach(function(b) {
+      b.style.pointerEvents = 'none';
+      if (b.dataset.val === correct) b.style.cssText += ';border-color:var(--green);background:rgba(78,203,113,.2);';
+      else if (b === btn && chosen !== correct) b.style.cssText += ';border-color:var(--accent2);background:rgba(255,107,107,.2);';
+    });
+    if (chosen === correct) score++;
+    else { var wq = Object.assign({}, qs[qIndex]); wq.i = qs[qIndex].i !== undefined ? qs[qIndex].i : qIndex; wrongs.push(wq); }
+    setTimeout(function() { qIndex++; renderSpeed(); }, 700);
+  };
+
+  function renderSpeedResult() {
+    var avgMs  = speedTimes.length ? Math.round(speedTimes.reduce(function(a,b){return a+b;},0)/speedTimes.length) : 0;
+    var avgSec = (avgMs / 1000).toFixed(1);
+    container.innerHTML =
+      '<div class="card" style="text-align:center;padding:24px;">'
+      + '<h2>'+score+' / '+qs.length+'</h2>'
+      + '<p style="color:var(--muted);margin-top:8px;">Avg response time: <strong style="color:var(--accent);">'+avgSec+'s</strong></p>'
+      + '</div>';
+    setTimeout(renderResult, 1500);
+  }
+
+
   loadQuestions(function() {
     if (mode === 'memory')      renderMemory();
     else if (mode === 'spell')  renderSpell();
     else if (mode === 'mc')     renderMC();
     else if (mode === 'fitb')   renderFITB();
+    else if (mode === 'match')  renderMatch();
+    else if (mode === 'speed')  renderSpeedFirst();
   });
 
 })();
@@ -2350,7 +2582,7 @@ function renderAltResult(result, data) {
 }
 
 function pickMode(m) {
-  ['memory','spell','fitb','mc'].forEach(function(x){
+  ['memory','spell','fitb','mc','match','speed'].forEach(function(x){
     var id = 'mode' + x.charAt(0).toUpperCase() + x.slice(1);
     var el = document.getElementById(id);
     if(el) el.classList.toggle('selected', x===m);
