@@ -726,11 +726,67 @@ if ($action === 'admin_report') {
   --accent:#f9c846; --accent2:#ff6b6b; --green:#4ecb71; --blue:#4a9eff;
   --text:#e8f4fd; --muted:#7a9bbf; --radius:20px; --shadow:0 8px 32px rgba(0,0,0,0.4);
 }
+/* Light theme */
+body.theme-light {
+  --bg:#f0f4ff; --card:#ffffff; --card2:#e8eef8;
+  --accent:#d4920a; --accent2:#d94f4f; --green:#2e9e52; --blue:#2870d4;
+  --text:#1a2540; --muted:#5a6a8a; --shadow:0 4px 20px rgba(0,0,0,0.1);
+}
+body.theme-light { background-image:
+  radial-gradient(ellipse at 20% 20%,rgba(40,112,212,.06) 0%,transparent 60%),
+  radial-gradient(ellipse at 80% 80%,rgba(212,146,10,.05) 0%,transparent 60%);
+}
+body.theme-light nav { border-bottom:1px solid rgba(0,0,0,.08); }
+body.theme-light .card { border:1px solid rgba(0,0,0,.12); }
+body.theme-light .student-card { border:2px solid rgba(0,0,0,.15); background:var(--card); }
+body.theme-light .student-card:hover { border-color:var(--blue); background:var(--card2); }
+body.theme-light .card2, body.theme-light [style*="background:var(--card2)"] { border:1px solid rgba(0,0,0,.1); }
+body.theme-light .word-card { border:2px solid rgba(40,112,212,.2); }
+body.theme-light .flip-front { border:2px solid rgba(40,112,212,.2); background:#f0f4ff; }
+body.theme-light .flip-back  { border:2px solid var(--accent); background:#fffbf0; }
+body.theme-light .mc-btn { border:2px solid rgba(0,0,0,.15); background:#f5f8ff; color:var(--text); }
+body.theme-light .mc-btn:hover { border-color:var(--blue); background:#e8f0ff; }
+body.theme-light .word-chip { border:2px solid rgba(0,0,0,.15); background:var(--card); color:var(--text); }
+body.theme-light .word-bank { background:#eef2ff; border:2px dashed rgba(0,0,0,.15); }
+body.theme-light .fitb-blank { border-bottom:3px solid var(--blue); background:rgba(40,112,212,.07); }
+body.theme-light .fitb-bank-card { border:2px solid rgba(0,0,0,.12); background:var(--card); }
+body.theme-light .level-badge { background:rgba(212,146,10,.12); border-color:var(--accent); }
+body.theme-light .stat-box { background:#eef2ff; border:1px solid rgba(0,0,0,.1); }
+body.theme-light .modal { background:var(--card); border:1px solid rgba(0,0,0,.12); }
+body.theme-light .pin-input, body.theme-light .text-input, body.theme-light .name-input { 
+  background:#eef2ff; border:2px solid rgba(0,0,0,.15); color:var(--text); }
+body.theme-light .btn-ghost { border:2px solid rgba(0,0,0,.2); color:var(--muted); }
+body.theme-light .match-item { border:2px solid rgba(0,0,0,.15); background:#f5f8ff; }
+body.theme-light .speed-answer-btn { border:2px solid rgba(0,0,0,.15); background:#f5f8ff; }
+body.theme-light .admin-student-row { background:#eef2ff; border:1px solid rgba(0,0,0,.1); }
+body.theme-light .mode-card { border:2px solid rgba(0,0,0,.12); background:#f5f8ff; }
+body.theme-light .mode-card:hover, body.theme-light .mode-card.selected { border-color:var(--blue); background:#e8f0ff; }
+body.theme-light nav { background:#ffffff; box-shadow:0 2px 12px rgba(0,0,0,.08); }
+body.theme-light .nav-logo { color:var(--blue); }
+body.theme-light .result-item { background:#eef2ff; }
+body.theme-light .word-sel-btn { border:2px solid rgba(0,0,0,.12); background:#f5f8ff; }
+body.theme-light .word-sel-btn:hover, body.theme-light .word-sel-btn.selected { border-color:var(--blue); background:#e8f0ff; }
+body.theme-light .flip-front { background:#e8eef8; border-color:rgba(40,112,212,.2); }
+body.theme-light .flip-back  { background:rgba(212,146,10,.08); }
+body.theme-light .word-chip  { background:#fff; border-color:rgba(40,112,212,.3); color:var(--text); }
+body.theme-light .mc-btn     { background:#e8eef8; border-color:rgba(0,0,0,.1); color:var(--text); }
+body.theme-light .fitb-blank { background:rgba(40,112,212,.08); border-bottom-color:var(--blue); }
+body.theme-light .student-card { background:#e8eef8; border-color:rgba(0,0,0,.07); }
+body.theme-light .btn-ghost  { border-color:rgba(0,0,0,.15); color:var(--muted); }
+body.theme-light .modal      { background:#fff; }
+body.theme-light .text-input { background:#f8faff; border-color:rgba(0,0,0,.12); color:var(--text); }
+body.theme-light .word-card  { background:#e8eef8; }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
   background-image:radial-gradient(ellipse at 20% 20%,rgba(74,158,255,.08) 0%,transparent 60%),
                    radial-gradient(ellipse at 80% 80%,rgba(249,200,70,.06) 0%,transparent 60%);}
 .container{max-width:700px;margin:0 auto;padding:20px;}
+
+/* Theme toggle */
+.theme-toggle{background:none;border:2px solid rgba(255,255,255,.15);border-radius:50px;
+  padding:5px 12px;font-size:1rem;cursor:pointer;transition:all .2s;color:var(--muted);}
+.theme-toggle:hover{border-color:var(--accent);color:var(--accent);}
+body.theme-light .theme-toggle{border-color:rgba(0,0,0,.15);}
 
 /* Nav */
 nav{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;
@@ -1004,7 +1060,7 @@ p{color:var(--muted);line-height:1.6;margin-bottom:10px;}
 
 <nav>
   <span class="nav-logo">&#128218; WordWise</span>
-  <div class="nav-right">
+    <div class="nav-right">
     <?php if ($currentStudent): ?>
       <span class="nav-student">&#128100; <?= htmlspecialchars($currentStudent['name']) ?></span>
       <a href="?action=logout" class="btn-logout">Log out</a>
@@ -1017,6 +1073,7 @@ p{color:var(--muted);line-height:1.6;margin-bottom:10px;}
       <?php else: ?>
         <a href="?" <?= (!$action||$action==='login')?'class="active"':'' ?>>&#127968; Home</a>
       <?php endif; ?>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" id="themeToggle">&#9728;&#65039;</button>
       <a href="?action=admin" <?= $action==='admin'?'class="active"':'' ?>>Admin</a>
     </div>
   </div>
@@ -1716,6 +1773,31 @@ function esc(s) {
 function escAttr(s) {
   return String(s||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
 }
+
+// Theme toggle - persists in localStorage
+function applyTheme(t) {
+  if (t === 'light') {
+    document.body.classList.add('theme-light');
+    var btn = document.getElementById('themeToggle');
+    if (btn) btn.textContent = '\u263D'; // moon = switch to dark
+  } else {
+    document.body.classList.remove('theme-light');
+    var btn = document.getElementById('themeToggle');
+    if (btn) btn.textContent = '\u2600\uFE0F'; // sun = switch to light
+  }
+}
+function toggleTheme() {
+  var isLight = document.body.classList.contains('theme-light');
+  var next = isLight ? 'dark' : 'light';
+  try { localStorage.setItem('ww_theme', next); } catch(e) {}
+  applyTheme(next);
+}
+// Apply saved theme on load
+(function() {
+  var saved = 'dark';
+  try { saved = localStorage.getItem('ww_theme') || 'dark'; } catch(e) {}
+  applyTheme(saved);
+})();
 
 function speak(word) {
   if (!window.speechSynthesis) {
